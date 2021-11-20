@@ -2,6 +2,7 @@ package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,6 +16,7 @@ class ChatThread extends Thread {
 
 	public ChatThread(ServerSocket chatServerSocket) {
 		this.chatServerSocket = chatServerSocket;
+		clients = new ArrayList<ChatClient>();
 		this.start();
 	}
 
@@ -23,6 +25,7 @@ class ChatThread extends Thread {
 		while (true) {
 			try {
 				Socket soc = chatServerSocket.accept();
+
 				addNewClient(soc);
 
 				Thread.sleep(15);
@@ -34,7 +37,8 @@ class ChatThread extends Thread {
 	}
 
 	public void addNewClient(Socket socket) {
-		if(clients.size() >= 4) return;
+		if (clients.size() >= 4)
+			return;
 		// Look through client list
 		boolean found = false;
 		for (int i = 0; i < ChatThread.clients.size(); i++) {
@@ -47,7 +51,7 @@ class ChatThread extends Thread {
 		// Add to list if it doesn't exist
 		if (!found) {
 			System.out.println(
-					"New client connected" + socket.getInetAddress().getAddress() + " Port: " + socket.getPort());
+					"New chat client connected" + socket.getInetAddress().getAddress() + " Port: " + socket.getPort());
 			clients.add(new ChatClient(socket));
 		}
 	}
@@ -62,7 +66,6 @@ class ChatThread extends Thread {
 			try {
 				this.dis = new DataInputStream(soc.getInputStream());
 				this.dos = new DataOutputStream(soc.getOutputStream());
-				System.out.println(soc.getInetAddress());
 			} catch (Exception e) {
 
 			}
@@ -74,15 +77,17 @@ class ChatThread extends Thread {
 				try {
 					String username = dis.readUTF();
 					String msg = dis.readUTF();
-					// todo: refactor for sending to all other clients, not the one which send the
-					// message
 					for (ChatClient client : ChatThread.clients) {
-						try {
-							client.dos.writeUTF(username);
-							client.dos.writeUTF(msg);
-						} catch (Exception e1) {
-							// ChatServer.clients.remove(c);???
+						if (!client.soc.getInetAddress().getAddress().equals(this.soc.getInetAddress().getAddress())
+								&& client.soc.getPort() != this.soc.getPort()) {
+							try {
+								client.dos.writeUTF(username);
+								client.dos.writeUTF(msg);
+							} catch (Exception e1) {
+								// ChatServer.clients.remove(c);???
+							}
 						}
+
 					}
 				} catch (Exception e) {
 

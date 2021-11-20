@@ -17,11 +17,9 @@ class ChatThread extends Thread {
     	try {
         	inputStream = new DataInputStream(socket.getInputStream());
     		outputStream = new DataOutputStream(socket.getOutputStream());
-    		this.start();
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
-        start();
     }
     
     public void send(String username, String message) {
@@ -34,7 +32,7 @@ class ChatThread extends Thread {
 	}
     
     @Override
-    public synchronized void start() {
+    public void run() {
         String username;
         String message;
         try {

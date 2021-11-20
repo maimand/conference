@@ -3,6 +3,7 @@ package server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 
 class VideoThread extends Thread {
@@ -13,6 +14,7 @@ class VideoThread extends Thread {
 	byte[] outbuff = new byte[Server.BYTES_LENGTH];
 
 	public VideoThread(DatagramSocket socket) throws Exception {
+		clients = new ArrayList<IpAddress>();
 		this.socket = socket;
 		this.start();
 	}
@@ -46,9 +48,10 @@ class VideoThread extends Thread {
 		}
 		// Add to list if it doesn't exist
 		if (!found) {
-			System.out.println("New client connected" + packet.getAddress() + " Port: " + packet.getPort());
+			System.out.println("New video connected" + packet.getAddress() + " Port: " + packet.getPort());
 			clients.add(new IpAddress(packet.getAddress(), packet.getPort()));
 		}
+		
 	}
 
 	// todo: send to all other client the packetData

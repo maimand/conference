@@ -29,7 +29,7 @@ import javax.swing.UIManager;
 
 public class ClientUI {
 	String appName = "Conference v1.0.1";
-	public final int CHAT_SOCKET_PORT = 9879;
+	public final int CHAT_SOCKET_PORT = 9789;
 	public static JFrame mainFrame = new JFrame();
     public static JPanel mainJPanel = new JPanel(new GridLayout(2,1));
     public static JPanel chatJPanel = new JPanel();
@@ -176,16 +176,20 @@ public class ClientUI {
 
 
 		try {
+			System.out.println(serverAddress);
 			Socket clientSocket = new Socket(serverAddress, CHAT_SOCKET_PORT);
 			chatThread = new ChatThread(clientSocket);
+			chatThread.start();
 		}
 		catch (Exception e) {
+			System.err.println(e);
 			// TODO: handle exception
 		}
 		try {
 			UpVideoThread upVideoThread = new UpVideoThread(serverAddress);
 			upVideoThread.start();
 		} catch (Exception e) {
+			System.err.println(e);
 			// TODO: handle exception
 		}
 		
@@ -193,6 +197,7 @@ public class ClientUI {
 			DownVideoThread downVideoThread = new DownVideoThread();
 			downVideoThread.start();
 		} catch (Exception e) {
+			System.err.println(e);
 			// TODO: handle exception
 		}
 			
@@ -200,6 +205,7 @@ public class ClientUI {
 			UpVoiceThread upVoiceThred = new UpVoiceThread(serverAddress);
 			upVoiceThred.start();
 		} catch (Exception e) {
+			System.err.println(e);
 			// TODO: handle exception
 		}
 		
@@ -207,6 +213,7 @@ public class ClientUI {
 			DownVideoThread downVoiceThred = new DownVideoThread();
 			downVoiceThred.start();
 		} catch (Exception e) {
+			System.err.println(e);
 			// TODO: handle exception
 		}
 			
@@ -220,7 +227,7 @@ public class ClientUI {
         public void actionPerformed(ActionEvent event) {
             username = usernameChooser.getText();
             serverAddress = serverAddressTextField.getText();
-            if (username.length() < 1 && serverAddress.length() < 1) {
+            if (username.length() < 1 || serverAddress.length() < 1) {
                 System.out.println("Invalid");
             } else {
                 preFrame.setVisible(false);

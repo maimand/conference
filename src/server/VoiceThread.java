@@ -3,6 +3,7 @@ package server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 
 public class VoiceThread extends Thread {
@@ -13,6 +14,7 @@ public class VoiceThread extends Thread {
 	byte[] outbuff = new byte[Server.BYTES_LENGTH];
 	
 	public VoiceThread(DatagramSocket socket) {
+		clients = new ArrayList<IpAddress>();
 		this.socket = socket;
 		this.start();
 	}
@@ -46,7 +48,7 @@ public class VoiceThread extends Thread {
 		}
 		// Add to list if it doesn't exist
 		if (!found) {
-			System.out.println("New client connected" + packet.getAddress() + " Port: " + packet.getPort());
+			System.out.println("New voice client connected" + packet.getAddress() + " Port: " + packet.getPort());
 			clients.add(new IpAddress(packet.getAddress(), packet.getPort()));
 		}
 	}

@@ -44,7 +44,7 @@ public class UpVoiceThread extends Thread {
 				targetDataLine.read(data, 0, data.length);
 				// Build packet to send to server
 				DatagramPacket send_packet = new DatagramPacket(data, data.length, InetAddress.getByName(serverAddressString),
-						9879);
+						1234);
 
 				// Send to server
 				connection.send(send_packet);

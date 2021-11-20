@@ -1,7 +1,6 @@
 package client;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,7 +8,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 
 import com.github.sarxos.webcam.Webcam;
 
@@ -35,7 +33,7 @@ public class UpVideoThread extends Thread {
 
 			while (true) {
 				// send address
-				String address = InetAddress.getByName("localhost").getHostAddress();
+				String address = InetAddress.getLocalHost().getHostAddress();
 				DatagramPacket seP = new DatagramPacket(address.getBytes(), address.length(),
 						InetAddress.getByName(serverAddressString), VIDEO_SOCKET_PORT);
 				datagramSocket.send(seP);
@@ -55,6 +53,7 @@ public class UpVideoThread extends Thread {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
+					
 				}
 //					
 //					// receive address
