@@ -1,6 +1,7 @@
 package server;
 
 import java.awt.print.Printable;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
@@ -9,14 +10,17 @@ import java.util.ArrayList;
 
 public class Server {
 
-
-	public static ArrayList<ServerConnection> serverConnections;
-	static final int CHAT_SOCKET_PORT = 9789;
-	static final int VIDEO_SOCKET_PORT = 9879;
-	static final int VOICE_SOCKET_PORT = 1234;
-	static final int BYTES_LENGTH = 62000;
-
-	byte[] outbuff = new byte[Server.BYTES_LENGTH];
+	//todo: this will hold connections for chat thread, send message to those connections
+	
+	public final int CHAT_SOCKET_PORT = 9789;
+	public final int VIDEO_SOCKET_PORT = 9879;
+	public final int VOICE_SOCKET_PORT = 1234;
+	public static final int BYTES_LENGTH = 62000;
+	
+	private ServerSocket chatServerSocket;
+	private DatagramSocket videoServerSocket;
+	private DatagramSocket voiceServerSocket;
+	byte[] outbuff = new byte[BYTES_LENGTH];
 	DatagramPacket videoPacket;
 	
 	public static void main(String[] args) throws Exception
@@ -24,47 +28,26 @@ public class Server {
 		new Server();
 	}
 
-	public Server() throws Exception {
-		ServerSocket chatServerSocket = new ServerSocket(CHAT_SOCKET_PORT);
-		DatagramSocket videoSerSocket = new DatagramSocket(VIDEO_SOCKET_PORT);
-//		DatagramSocket voiceSerSocket = new DatagramSocket(VOICE_SOCKET_PORT);
-		
-		serverConnections = new ArrayList<ServerConnection>();
-		
-		byte[] buffer = new byte[BYTES_LENGTH];
-		videoPacket = new DatagramPacket(buffer, buffer.length);
-		System.out.println("Server open");
-
-
-		while (true) {
+	public Server() {
+		try {
+			this.chatServerSocket = new ServerSocket(CHAT_SOCKET_PORT);
+			this.videoServerSocket = new DatagramSocket(VIDEO_SOCKET_PORT);
+			this.voiceServerSocket = new DatagramSocket(VOICE_SOCKET_PORT);
 			
-			try {
-				Socket soc = chatServerSocket.accept();
-				System.out.println(soc.getPort());
-				ChatThread chatThread = new ChatThread(soc);
-				
-				videoSerSocket.receive(videoPacket);
-				IpAddress ipAddress = new IpAddress(videoPacket.getAddress(), videoPacket.getPort());
-				System.out.println(ipAddress.toString());
-//				VideoThread videoThread = new VideoThread(videoSerSocket, ipAddress);
-				
-//				serverConnections.add(new ServerConnection(chatThread, videoThread));
-//				DatagramPacket reP = new DatagramPacket(outbuff, outbuff.length);
-//				System.out.println(reP.getPort());
-//				videoSerSocket.receive(reP);
-//				
-//				for(ServerConnection connection : Server.serverConnections) {
-//					DatagramPacket dp = new DatagramPacket(outbuff, outbuff.length, connection.videoThreadSocket.ipAddress.address,
-//							connection.videoThreadSocket.ipAddress.port);
-//					videoSerSocket.send(dp);
-//				}
-				Thread.sleep(15);
-			} catch (Exception e) {
-
-			}
+			new ChatThread(this.chatServerSocket);
+			new VideoThread(this.videoServerSocket);
+			new VoiceThread(this.voiceServerSocket);
 			
+			System.out.println("Server open");
+		} catch (Exception e) {
+			System.out.println(e);
+			System.out.println("Server is down");
 		}
+		
+
 	}
+	
+
 }
 
 

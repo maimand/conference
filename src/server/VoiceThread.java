@@ -5,18 +5,18 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.ArrayList;
 
-class VideoThread extends Thread {
-
+public class VoiceThread extends Thread {
+	
 	DatagramSocket socket;
 	private ArrayList<IpAddress> clients;
 
 	byte[] outbuff = new byte[Server.BYTES_LENGTH];
-
-	public VideoThread(DatagramSocket socket) throws Exception {
+	
+	public VoiceThread(DatagramSocket socket) {
 		this.socket = socket;
 		this.start();
 	}
-
+	
 	@Override
 	public void run() {
 		while (true) {
@@ -25,14 +25,14 @@ class VideoThread extends Thread {
 				socket.receive(reP);
 				addNewClient(reP);
 				sendToAllClients(outbuff, reP.getAddress().getHostAddress(), reP.getPort());
-
+				
 				Thread.sleep(15);
 			} catch (Exception e) {
 
 			}
 		}
 	}
-
+	
 	public void addNewClient(DatagramPacket packet) {
 		if(clients.size() >= 4) return;
 		// Look through client list
@@ -50,8 +50,7 @@ class VideoThread extends Thread {
 			clients.add(new IpAddress(packet.getAddress(), packet.getPort()));
 		}
 	}
-
-	// todo: send to all other client the packetData
+	
 	public void sendToAllClients(byte[] packetData, String sentFromAddress, int sentFromPort) {
 		for (IpAddress client : this.clients) {
 			if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort) {
@@ -66,5 +65,4 @@ class VideoThread extends Thread {
 
 		}
 	}
-
 }

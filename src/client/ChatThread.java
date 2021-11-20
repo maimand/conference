@@ -17,28 +17,34 @@ class ChatThread extends Thread {
     	try {
         	inputStream = new DataInputStream(socket.getInputStream());
     		outputStream = new DataOutputStream(socket.getOutputStream());
+    		this.start();
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
         start();
     }
     
-    public void send(String message) {
+    public void send(String username, String message) {
     	try {
+    		outputStream.writeUTF(username);
 			outputStream.writeUTF(message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
-    public void run() {
+    
+    @Override
+    public synchronized void start() {
+        String username;
         String message;
         try {
             while (true) {
+            	username = inputStream.readUTF();
             	message = inputStream.readUTF();
-            	ClientUI.receive(message);
+            	ClientUI.receive(username, message);
             }
         } catch (Exception e) {
         }
     }
+
 }

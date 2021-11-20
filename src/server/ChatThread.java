@@ -2,40 +2,91 @@ package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.DatagramPacket;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 class ChatThread extends Thread {
 
-	Socket soc;
-	DataInputStream dis;
-	DataOutputStream dos;
+	public static ArrayList<ChatClient> clients;
 
-	public ChatThread(Socket soc) {
-		this.soc = soc;
-		try {
-			this.dis = new DataInputStream(soc.getInputStream());
-			this.dos = new DataOutputStream(soc.getOutputStream());
-			System.out.println(soc.getInetAddress());
-		} catch (Exception e) {
+	ServerSocket chatServerSocket;
 
-		}
+	public ChatThread(ServerSocket chatServerSocket) {
+		this.chatServerSocket = chatServerSocket;
 		this.start();
 	}
 
+	@Override
 	public void run() {
 		while (true) {
 			try {
-				System.out.println("here");
-				String msg = dis.readUTF();
-				for(ServerConnection connection : Server.serverConnections) {
-					try {
-						connection.chatThreadSocket.dos.writeUTF("" + '@' + soc.getInetAddress() + '>' + msg);
-					} catch (Exception e1) {
-						//ChatServer.clients.remove(c);???
-					}
-				}
+				Socket soc = chatServerSocket.accept();
+				addNewClient(soc);
+
+				Thread.sleep(15);
 			} catch (Exception e) {
-					
+
+			}
+
+		}
+	}
+
+	public void addNewClient(Socket socket) {
+		if(clients.size() >= 4) return;
+		// Look through client list
+		boolean found = false;
+		for (int i = 0; i < ChatThread.clients.size(); i++) {
+			ChatClient client = ChatThread.clients.get(i);
+			if (client.soc.getInetAddress().equals(socket.getInetAddress())
+					&& client.soc.getPort() == socket.getPort()) {
+				found = true;
+			}
+		}
+		// Add to list if it doesn't exist
+		if (!found) {
+			System.out.println(
+					"New client connected" + socket.getInetAddress().getAddress() + " Port: " + socket.getPort());
+			clients.add(new ChatClient(socket));
+		}
+	}
+
+	class ChatClient extends Thread {
+		Socket soc;
+		DataInputStream dis;
+		DataOutputStream dos;
+
+		public ChatClient(Socket soc) {
+			this.soc = soc;
+			try {
+				this.dis = new DataInputStream(soc.getInputStream());
+				this.dos = new DataOutputStream(soc.getOutputStream());
+				System.out.println(soc.getInetAddress());
+			} catch (Exception e) {
+
+			}
+			this.start();
+		}
+
+		public void run() {
+			while (true) {
+				try {
+					String username = dis.readUTF();
+					String msg = dis.readUTF();
+					// todo: refactor for sending to all other clients, not the one which send the
+					// message
+					for (ChatClient client : ChatThread.clients) {
+						try {
+							client.dos.writeUTF(username);
+							client.dos.writeUTF(msg);
+						} catch (Exception e1) {
+							// ChatServer.clients.remove(c);???
+						}
+					}
+				} catch (Exception e) {
+
+				}
 			}
 		}
 	}

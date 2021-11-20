@@ -1,7 +1,6 @@
 package client;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -14,7 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -30,7 +28,8 @@ import javax.swing.UIManager;
 
 
 public class ClientUI {
-	String appName = "Colt Chat v0.1";
+	String appName = "Conference v1.0.1";
+	public final int CHAT_SOCKET_PORT = 9879;
 	public static JFrame mainFrame = new JFrame();
     public static JPanel mainJPanel = new JPanel(new GridLayout(2,1));
     public static JPanel chatJPanel = new JPanel();
@@ -41,15 +40,16 @@ public class ClientUI {
     public static JLabel user3 = new JLabel();
     
 	ImageIcon img;
-    public static JTextArea ta,tb;
     JButton sender;
     ChatThread chatThread;
     
     JTextField  messageBox;
-    JTextArea   chatBox;
+    static JTextArea   chatBox;
     JTextField  usernameChooser;
+    JTextField serverAddressTextField;
     JFrame      preFrame;
     String  username;
+    String serverAddress;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -78,23 +78,21 @@ public class ClientUI {
     	mainFrame.setVisible(false);
         preFrame = new JFrame(appName);
         usernameChooser = new JTextField(15);
-        JLabel chooseUsernameLabel = new JLabel("Pick a username:");
+        JLabel chooseUsernameLabel = new JLabel("Your username:");
+        serverAddressTextField = new JTextField(15);
+        JLabel serverPanel = new JLabel("Server address:");
         JButton enterServer = new JButton("Enter Chat Server");
         enterServer.addActionListener(new enterServerButtonListener());
-        JPanel prePanel = new JPanel(new GridBagLayout());
+        JPanel prePanel = new JPanel();
+        GridLayout experimentLayout = new GridLayout(2,2);
+        prePanel.setLayout(experimentLayout);
 
-        GridBagConstraints preRight = new GridBagConstraints();
-        preRight.insets = new Insets(0, 0, 0, 10);
-        preRight.anchor = GridBagConstraints.EAST;
-        GridBagConstraints preLeft = new GridBagConstraints();
-        preLeft.anchor = GridBagConstraints.WEST;
-        preLeft.insets = new Insets(0, 10, 0, 10);
-        // preRight.weightx = 2.0;
-        preRight.fill = GridBagConstraints.HORIZONTAL;
-        preRight.gridwidth = GridBagConstraints.REMAINDER;
 
-        prePanel.add(chooseUsernameLabel, preLeft);
-        prePanel.add(usernameChooser, preRight);
+
+        prePanel.add(chooseUsernameLabel);
+        prePanel.add(usernameChooser);
+        prePanel.add(serverPanel);
+        prePanel.add(serverAddressTextField);
         preFrame.add(prePanel, BorderLayout.CENTER);
         preFrame.add(enterServer, BorderLayout.SOUTH);
         preFrame.setSize(300, 300);
@@ -120,21 +118,7 @@ public class ClientUI {
         videoJPanel.add(user2);
         videoJPanel.add(user3);
         
-        sender.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String sentence = tb.getText();
-                ta.append("From myself: "+sentence+"\n");
-                ta.setCaretPosition(ta.getDocument().getLength());
-                chatJPanel.revalidate();
-                chatJPanel.repaint();
-//                jp.revalidate();
-//                jp.repaint();
-                send(sentence);
-                tb.setText(null);
-            }
-        });
+        sender = new JButton("Send Message");
         
         
     	chatJPanel.setLayout(new BorderLayout());
@@ -146,8 +130,7 @@ public class ClientUI {
         messageBox = new JTextField(30);
         messageBox.requestFocusInWindow();
 
-        sender = new JButton("Send Message");
-        sender.addActionListener(new sendMessageButtonListener());
+
 
         chatBox = new JTextArea();
         chatBox.setEditable(false);
@@ -173,39 +156,62 @@ public class ClientUI {
         southPanel.add(sender, right);
 
         chatJPanel.add(BorderLayout.SOUTH, southPanel);
+        
+        sender.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String sentence = messageBox.getText();
+                chatBox.append("" +  username + ": " +sentence+"\n");
+                chatBox.setCaretPosition(chatBox.getDocument().getLength());
+                chatJPanel.revalidate();
+                chatJPanel.repaint();
+//                jp.revalidate();
+//                jp.repaint();
+                send(sentence);
+                messageBox.setText(null);
+            }
+        });
+        
+
 
 		try {
-			Socket clientSocket = new Socket("localhost", 9789);
+			Socket clientSocket = new Socket(serverAddress, CHAT_SOCKET_PORT);
 			chatThread = new ChatThread(clientSocket);
-			UpVideoThread upVideoThread = new UpVideoThread();
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+		}
+		try {
+			UpVideoThread upVideoThread = new UpVideoThread(serverAddress);
 			upVideoThread.start();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		try {
 			DownVideoThread downVideoThread = new DownVideoThread();
 			downVideoThread.start();
-			System.out.println("open");
-		} catch (UnknownHostException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (Exception e1) {
-			e1.printStackTrace();
+		} catch (Exception e) {
+			// TODO: handle exception
 		}
-    }
+			
+		try {
+			UpVoiceThread upVoiceThred = new UpVoiceThread(serverAddress);
+			upVoiceThred.start();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		
+		try {
+			DownVideoThread downVoiceThred = new DownVideoThread();
+			downVoiceThred.start();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+			
+			System.out.println("open");
 
-    class sendMessageButtonListener implements ActionListener {
-        public void actionPerformed(ActionEvent event) {
-            if (messageBox.getText().length() < 1) {
-                // do nothing
-            } else if (messageBox.getText().equals(".clear")) {
-                chatBox.setText("Cleared all messages\n");
-                messageBox.setText("");
-            } else {
-                chatBox.append("<" + username + ">:  " + messageBox.getText()
-                        + "\n");
-                send(messageBox.getText());
-                messageBox.setText("");
-            }
-            messageBox.requestFocusInWindow();
-        }
     }
 
 
@@ -213,8 +219,9 @@ public class ClientUI {
     class enterServerButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent event) {
             username = usernameChooser.getText();
-            if (username.length() < 1) {
-                System.out.println("No!");
+            serverAddress = serverAddressTextField.getText();
+            if (username.length() < 1 && serverAddress.length() < 1) {
+                System.out.println("Invalid");
             } else {
                 preFrame.setVisible(false);
                 display();
@@ -230,7 +237,7 @@ public class ClientUI {
     
     public void send(String message) {
     	try {
-    		chatThread.send(message);
+    		chatThread.send(username, message);
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
@@ -242,9 +249,9 @@ public class ClientUI {
     	selfVideo.setIcon(imc);
 	}
     
-    public static void receive(String message) {
-    	ta.append(message+"\n");
-        ta.setCaretPosition(ta.getDocument().getLength());
+    public static void receive(String username, String message) {
+    	chatBox.append("" + username + ":  " + message +"\n");
+    	chatBox.setCaretPosition(chatBox.getDocument().getLength());
         chatJPanel.revalidate();
         chatJPanel.repaint();
 	}
@@ -277,9 +284,6 @@ public class ClientUI {
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + userId);
 			}
-            if(userId == 0) user1.setIcon(imc);
-            if(userId == 0) user1.setIcon(imc);
-            if(userId == 0) user1.setIcon(imc);
         }
         mainFrame.revalidate();
         mainFrame.repaint();

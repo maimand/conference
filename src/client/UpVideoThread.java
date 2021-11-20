@@ -14,52 +14,48 @@ import javax.swing.ImageIcon;
 import com.github.sarxos.webcam.Webcam;
 
 public class UpVideoThread extends Thread {
-	 byte[] receiveBytes = new byte[62000];
-	 byte[] sendBytes = new byte[62000];
-	 Webcam webcam;
-	 ArrayList<String> userAddresses = new ArrayList<>();
+	public final int VIDEO_SOCKET_PORT = 9879;
+	byte[] sendBytes = new byte[62000];
+	Webcam webcam;
+	ArrayList<String> userAddresses = new ArrayList<>();
+	String serverAddressString;
+	BufferedImage bf;
 
-	    
-	 DatagramPacket dataReceive = new DatagramPacket(receiveBytes, receiveBytes.length);
-	 BufferedImage bf;
-	    
-	    
-	    
-	 public UpVideoThread() throws Exception {
-	    webcam = Webcam.getDefault();
-	    webcam.open(true);
-	 }
+	public UpVideoThread(String serverAddress) throws Exception {
+		this.serverAddressString = serverAddress;
+		webcam = Webcam.getDefault();
+		webcam.open(true);
+	}
 
-	 @Override
-	 public void run() {
-	    try {
-	    		 int index = -1;
-	        	 DatagramSocket ds = new DatagramSocket();
-	        	 
-				
-	            while(true) {
-	            	System.out.println("here");
-	            	String str = InetAddress.getByName("localhost").getHostAddress();
-		        	 DatagramPacket seP = new DatagramPacket(str.getBytes(), str.length(),
-								InetAddress.getByName("localhost"), 9879);
-					ds.send(seP);
-	            	
-	            	// send image
-	            	BufferedImage image = webcam.getImage();
-	            	ClientUI.addSelfVideo(image);
-	            	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					
-					ImageIO.write(image, "jpg", baos);
-					
-					sendBytes = baos.toByteArray();
-					DatagramPacket imageBytes = new DatagramPacket(sendBytes, sendBytes.length,
-							InetAddress.getByName("localhost"), 9879);
-					ds.send(imageBytes);
-					baos.flush();
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-					}
+	@Override
+	public void run() {
+		try {
+			int index = -1;
+			DatagramSocket datagramSocket = new DatagramSocket();
+
+			while (true) {
+				// send address
+				String address = InetAddress.getByName("localhost").getHostAddress();
+				DatagramPacket seP = new DatagramPacket(address.getBytes(), address.length(),
+						InetAddress.getByName(serverAddressString), VIDEO_SOCKET_PORT);
+				datagramSocket.send(seP);
+
+				// send image
+				BufferedImage image = webcam.getImage();
+				ClientUI.addSelfVideo(image);
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+				ImageIO.write(image, "jpg", baos);
+
+				sendBytes = baos.toByteArray();
+				DatagramPacket imageBytes = new DatagramPacket(sendBytes, sendBytes.length,
+						InetAddress.getByName(serverAddressString), VIDEO_SOCKET_PORT);
+				datagramSocket.send(imageBytes);
+				baos.flush();
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
 //					
 //					// receive address
 //					ds.receive(dataReceive);
@@ -71,14 +67,11 @@ public class UpVideoThread extends Thread {
 //						ds.receive(dataReceive);
 //		                ClientUI.receiveVideo(receiveBytes, index);
 //					}
-					
-	            }
-	        } catch (Exception e) {
-	        	System.out.println(e.toString());
-	            System.out.println("couldnt do it");
-	        }
-	    }
+
+			}
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			System.out.println("couldnt do it");
+		}
+	}
 }
-
-
-
