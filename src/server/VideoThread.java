@@ -3,31 +3,44 @@ package server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+
+import config.Config;
 
 class VideoThread extends Thread {
 
 	DatagramSocket socket;
-	private ArrayList<IpAddress> clients;
+	public static ArrayList<IpAddress> clients;
 
 	byte[] outbuff = new byte[Server.BYTES_LENGTH];
+	
 
-	public VideoThread(DatagramSocket socket) throws Exception {
-		clients = new ArrayList<IpAddress>();
-		this.socket = socket;
-		this.start();
+	public VideoThread() {
+
+		try {
+			clients = new ArrayList<IpAddress>();
+			this.socket = new DatagramSocket(Config.portUDPVideo, InetAddress.getByName("localhost"));
+			this.start();
+		} catch (SocketException | UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
 	public void run() {
 		while (true) {
 			try {
+				byte[] outbuff = new byte[Server.BYTES_LENGTH];
 				DatagramPacket reP = new DatagramPacket(outbuff, outbuff.length);
-				socket.receive(reP);
+				this.socket.receive(reP);
 				addNewClient(reP);
-				sendToAllClients(outbuff, reP.getAddress().getHostAddress(), reP.getPort());
-
+				sendToAllClients(reP.getData(), reP.getAddress().getHostAddress(), reP.getPort());
 				Thread.sleep(15);
 			} catch (Exception e) {
 
@@ -36,13 +49,13 @@ class VideoThread extends Thread {
 	}
 
 	public void addNewClient(DatagramPacket packet) {
-		if(clients.size() >= 4) return;
+		if (clients.size() >= 4)
+			return;
 		// Look through client list
 		boolean found = false;
-		for (int i = 0; i < this.clients.size(); i++) {
-			IpAddress client = this.clients.get(i);
-			if (client.address.getHostAddress().equals(packet.getAddress().getHostAddress())
-					&& client.port == packet.getPort()) {
+		for (int i = 0; i < clients.size(); i++) {
+			IpAddress client = clients.get(i);
+			if (client.address.getHostAddress().equals(packet.getAddress().getHostAddress())) {
 				found = true;
 			}
 		}
@@ -51,20 +64,25 @@ class VideoThread extends Thread {
 			System.out.println("New video connected" + packet.getAddress() + " Port: " + packet.getPort());
 			clients.add(new IpAddress(packet.getAddress(), packet.getPort()));
 		}
-		
+
 	}
 
 	// todo: send to all other client the packetData
 	public void sendToAllClients(byte[] packetData, String sentFromAddress, int sentFromPort) {
-		for (IpAddress client : this.clients) {
-			if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort) {
-				DatagramPacket dp = new DatagramPacket(packetData, packetData.length, client.address, client.port);
-				try {
-					this.socket.send(dp);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		for (IpAddress client : clients) {
+			DatagramPacket address;
+			DatagramPacket message;
+			try {
+				address = new DatagramPacket(sentFromAddress.getBytes(), sentFromAddress.length(), client.address,
+						client.port);
+				this.socket.send(address);
+
+				message = new DatagramPacket(packetData, packetData.length, client.address, client.port);
+//				if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort)
+				this.socket.send(message);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
 			}
 
 		}

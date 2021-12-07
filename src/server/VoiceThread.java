@@ -3,44 +3,54 @@ package server;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 
-public class VoiceThread extends Thread {
-	
-	DatagramSocket socket;
-	private ArrayList<IpAddress> clients;
+import config.Config;
 
-	byte[] outbuff = new byte[Server.BYTES_LENGTH];
-	
-	public VoiceThread(DatagramSocket socket) {
-		clients = new ArrayList<IpAddress>();
-		this.socket = socket;
-		this.start();
+public class VoiceThread extends Thread {
+
+	DatagramSocket socket;
+	public static ArrayList<IpAddress> clients;
+
+	public VoiceThread() {
+		try {
+			clients = new ArrayList<IpAddress>();
+			this.socket = new DatagramSocket(Config.portUDPAudio);
+			this.start();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
-	
+
 	@Override
 	public void run() {
 		while (true) {
 			try {
+				byte[] outbuff = new byte[Server.BYTES_LENGTH];
 				DatagramPacket reP = new DatagramPacket(outbuff, outbuff.length);
 				socket.receive(reP);
 				addNewClient(reP);
-				sendToAllClients(outbuff, reP.getAddress().getHostAddress(), reP.getPort());
-				
+				sendToAllClients(reP.getData(), reP.getAddress().getHostAddress(), reP.getPort());
+
 				Thread.sleep(15);
 			} catch (Exception e) {
 
 			}
 		}
 	}
-	
+
 	public void addNewClient(DatagramPacket packet) {
-		if(clients.size() >= 4) return;
+		if (clients.size() >= 4)
+			return;
 		// Look through client list
 		boolean found = false;
-		for (int i = 0; i < this.clients.size(); i++) {
-			IpAddress client = this.clients.get(i);
+		for (int i = 0; i < clients.size(); i++) {
+			IpAddress client = clients.get(i);
 			if (client.address.getHostAddress().equals(packet.getAddress().getHostAddress())
 					&& client.port == packet.getPort()) {
 				found = true;
@@ -52,9 +62,9 @@ public class VoiceThread extends Thread {
 			clients.add(new IpAddress(packet.getAddress(), packet.getPort()));
 		}
 	}
-	
+
 	public void sendToAllClients(byte[] packetData, String sentFromAddress, int sentFromPort) {
-		for (IpAddress client : this.clients) {
+		for (IpAddress client : clients) {
 			if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort) {
 				DatagramPacket dp = new DatagramPacket(packetData, packetData.length, client.address, client.port);
 				try {

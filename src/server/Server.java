@@ -8,13 +8,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import config.Config;
+
 public class Server {
 
 	//todo: this will hold connections for chat thread, send message to those connections
 	
-	public final int CHAT_SOCKET_PORT = 9789;
-	public final int VIDEO_SOCKET_PORT = 9879;
-	public final int VOICE_SOCKET_PORT = 1234;
 	public static final int BYTES_LENGTH = 62000;
 	
 	private ServerSocket chatServerSocket;
@@ -23,6 +22,8 @@ public class Server {
 	byte[] outbuff = new byte[BYTES_LENGTH];
 	DatagramPacket videoPacket;
 	
+	public static ArrayList<IpAddress> clients;
+	
 	public static void main(String[] args) throws Exception
 	{
 		new Server();
@@ -30,13 +31,10 @@ public class Server {
 
 	public Server() {
 		try {
-			this.chatServerSocket = new ServerSocket(CHAT_SOCKET_PORT);
-			this.videoServerSocket = new DatagramSocket(VIDEO_SOCKET_PORT);
-			this.voiceServerSocket = new DatagramSocket(VOICE_SOCKET_PORT);
 			
-			new ChatThread(this.chatServerSocket);
-			new VideoThread(this.videoServerSocket);
-			new VoiceThread(this.voiceServerSocket);
+			new ChatThread();
+			new VideoThread();
+			new VoiceThread();
 			
 			System.out.println("Server open");
 		} catch (Exception e) {

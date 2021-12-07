@@ -12,22 +12,26 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.TargetDataLine;
 
+import config.Config;
+
 public class UpVoiceThread extends Thread {
 
 	private TargetDataLine targetDataLine;
 	private DatagramSocket connection;
 	byte[] data = new byte[62000];
 	String serverAddressString;
+	boolean isConnecting = true;
 
-	public UpVoiceThread(String address) throws SocketException {
-		this.connection = new DatagramSocket();
+	public UpVoiceThread(String address , DatagramSocket connection) throws SocketException {
+		this.connection = connection;
 		this.serverAddressString = address;
 	}
-
+	
+	@Override
 	public void run() {
 		sendAudio();
 	}
-
+	
 	private void sendAudio() {
 		try {
 
@@ -39,15 +43,14 @@ public class UpVoiceThread extends Thread {
 			// Create buffer to store received bytes
 
 			while (true) {
-
-				// Read bytes from line
+				
 				targetDataLine.read(data, 0, data.length);
 				// Build packet to send to server
 				DatagramPacket send_packet = new DatagramPacket(data, data.length, InetAddress.getByName(serverAddressString),
-						1234);
+						Config.portUDPAudio);
 
 				// Send to server
-				connection.send(send_packet);
+				this.connection.send(send_packet);
 			}
 		} catch (IOException | LineUnavailableException e) {
 			System.out.println(e);

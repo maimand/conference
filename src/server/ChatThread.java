@@ -8,16 +8,24 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import config.Config;
+
 class ChatThread extends Thread {
 
 	public static ArrayList<ChatClient> clients;
 
 	ServerSocket chatServerSocket;
 
-	public ChatThread(ServerSocket chatServerSocket) {
-		this.chatServerSocket = chatServerSocket;
-		clients = new ArrayList<ChatClient>();
-		this.start();
+	public ChatThread() {
+		try {
+			this.chatServerSocket = new ServerSocket(Config.portTCPMessage);
+			clients = new ArrayList<ChatClient>();
+			this.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	@Override
@@ -28,7 +36,7 @@ class ChatThread extends Thread {
 
 				addNewClient(soc);
 
-				Thread.sleep(15);
+				Thread.sleep(100);
 			} catch (Exception e) {
 
 			}
@@ -50,8 +58,8 @@ class ChatThread extends Thread {
 		}
 		// Add to list if it doesn't exist
 		if (!found) {
-			System.out.println(
-					"New chat client connected" + socket.getInetAddress().getAddress() + " Port: " + socket.getPort());
+			System.out.println("New chat client connected" + socket.getInetAddress().getHostAddress() + " Port: "
+					+ socket.getPort());
 			clients.add(new ChatClient(socket));
 		}
 	}
@@ -78,16 +86,25 @@ class ChatThread extends Thread {
 					String username = dis.readUTF();
 					String msg = dis.readUTF();
 					for (ChatClient client : ChatThread.clients) {
-						if (!client.soc.getInetAddress().getAddress().equals(this.soc.getInetAddress().getAddress())
-								&& client.soc.getPort() != this.soc.getPort()) {
-							try {
-								client.dos.writeUTF(username);
-								client.dos.writeUTF(msg);
-							} catch (Exception e1) {
-								// ChatServer.clients.remove(c);???
-							}
+//						if (!client.soc.getInetAddress().getAddress().equals(this.soc.getInetAddress().getAddress())
+//								&& client.soc.getPort() != this.soc.getPort()) 
+						try {
+							client.dos.writeUTF(username);
+							client.dos.writeUTF(msg);
+							if (msg.equals("disconnect")) client.dos.writeUTF(soc.getInetAddress().getHostAddress());
+						} catch (Exception e1) {
+							// ChatServer.clients.remove(c);???
 						}
 
+					}
+					if (msg.equals("disconnect")) {
+						clients.removeIf(element -> soc.getInetAddress().equals(element.soc.getInetAddress()));
+						VideoThread.clients.removeIf(element -> soc.getInetAddress().equals(element.address));
+						VoiceThread.clients.removeIf(element -> soc.getInetAddress().equals(element.address));
+						soc.close();
+						dis.close();
+						dos.close();
+						return;
 					}
 				} catch (Exception e) {
 
