@@ -24,11 +24,29 @@ public class UpVideoThread extends Thread {
 	public UpVideoThread(String serverAddress, DatagramSocket datagramSocket) throws Exception {
 		this.serverAddressString = serverAddress;
 		this.datagramSocket = datagramSocket;
-		webcam = Webcam.getDefault();
-		webcam.open(true);
-		this.start();
+		connect();
+		try {
+			webcam = Webcam.getDefault();
+			webcam.open(true);
+			this.start();
+		} catch (Exception e) {
+		}
 	}
-	
+
+	void connect() {
+		String startString = "start";
+		DatagramPacket seP;
+		try {
+			seP = new DatagramPacket(startString.getBytes(), startString.length(),
+					InetAddress.getByName(serverAddressString), Config.portUDPVideo);
+			datagramSocket.send(seP);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
 	void disconnect() {
 		webcam.close();
 		this.datagramSocket.close();

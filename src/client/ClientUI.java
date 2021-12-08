@@ -181,7 +181,6 @@ public class ClientUI {
 			chatThread.start();
 		} catch (Exception e) {
 			System.err.println(e);
-			// TODO: handle exception
 		}
 
 		try {
@@ -189,17 +188,14 @@ public class ClientUI {
 			try {
 				upVideoThread = new UpVideoThread(serverAddress, videoDatagramSocket);
 			} catch (Exception e) {
-				// TODO: handle exception
 			}
 			try {
 				downVideoThread = new DownVideoThread(videoDatagramSocket);
 			} catch (Exception e) {
-				// TODO: handle exception
 			}
 
 		} catch (Exception e) {
 			System.err.println(e);
-			// TODO: handle exception
 		}
 
 		try {
@@ -207,17 +203,14 @@ public class ClientUI {
 			try {
 				upVoiceThread = new UpVoiceThread(serverAddress, voiceDatagramSocket);
 			} catch (Exception e) {
-				// TODO: handle exception
 			}
 			try {
 				downVoiceThread = new DownVoiceThread(voiceDatagramSocket);
 			} catch (Exception e) {
-				// TODO: handle exception
 			}
 
 		} catch (Exception e) {
 			System.err.println(e);
-			// TODO: handle exception
 		}
 
 		System.out.println("open");
@@ -228,27 +221,22 @@ public class ClientUI {
 				try {
 					upVideoThread.disconnect();
 				} catch (Exception e) {
-					// TODO: handle exception
 				}
 				try {
 					downVideoThread.disconnect();
 				} catch (Exception e) {
-					// TODO: handle exception
 				}
 				try {
 					upVoiceThread.disconnect();
 				} catch (Exception e) {
-					// TODO: handle exception
 				}
 				try {
 					downVideoThread.disconnect();
 				} catch (Exception e) {
-					// TODO: handle exception
 				}
 				try {
 					chatThread.disConnect(username);
 				} catch (Exception e) {
-					// TODO: handle exception
 				}
 			}
 		});

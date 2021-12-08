@@ -17,7 +17,6 @@ class VideoThread extends Thread {
 	public static ArrayList<IpAddress> clients;
 
 	byte[] outbuff = new byte[Server.BYTES_LENGTH];
-	
 
 	public VideoThread() {
 
@@ -55,7 +54,8 @@ class VideoThread extends Thread {
 		boolean found = false;
 		for (int i = 0; i < clients.size(); i++) {
 			IpAddress client = clients.get(i);
-			if (client.address.getHostAddress().equals(packet.getAddress().getHostAddress())) {
+			if (client.address.getHostAddress().equals(packet.getAddress().getHostAddress())
+					&& client.port == packet.getPort()) {
 				found = true;
 			}
 		}
