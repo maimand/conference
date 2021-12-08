@@ -20,16 +20,21 @@ public class UpVoiceThread extends Thread {
 	private DatagramSocket connection;
 	byte[] data = new byte[62000];
 	String serverAddressString;
-	boolean isConnecting = true;
 
 	public UpVoiceThread(String address , DatagramSocket connection) throws SocketException {
 		this.connection = connection;
 		this.serverAddressString = address;
+		this.start();
 	}
 	
 	@Override
 	public void run() {
 		sendAudio();
+	}
+	
+	void disconnect() {
+		this.connection.close();
+		targetDataLine.close();
 	}
 	
 	private void sendAudio() {

@@ -11,8 +11,14 @@ public class DownVoiceThread extends Thread {
 	public DownVoiceThread(DatagramSocket connection) {
 		this.connection = connection;
 		this.audioPlayer = new AudioPlayer();
+		this.start();
 	}
-
+	
+	void disconnect() {
+		this.connection.close();
+	}
+	
+	@Override
 	public void run() {
 		while (true) {
 			try {

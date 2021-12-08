@@ -120,7 +120,7 @@ public class ClientUI {
 		videoJPanel.add(user1);
 		videoJPanel.add(user2);
 		videoJPanel.add(user3);
-		
+
 		setBlack(3);
 
 		sender = new JButton("Send Message");
@@ -186,10 +186,17 @@ public class ClientUI {
 
 		try {
 			DatagramSocket videoDatagramSocket = new DatagramSocket();
-			upVideoThread = new UpVideoThread(serverAddress, videoDatagramSocket);
-			upVideoThread.start();
-			downVideoThread = new DownVideoThread(videoDatagramSocket);
-			downVideoThread.start();
+			try {
+				upVideoThread = new UpVideoThread(serverAddress, videoDatagramSocket);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			try {
+				downVideoThread = new DownVideoThread(videoDatagramSocket);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+
 		} catch (Exception e) {
 			System.err.println(e);
 			// TODO: handle exception
@@ -197,10 +204,17 @@ public class ClientUI {
 
 		try {
 			DatagramSocket voiceDatagramSocket = new DatagramSocket();
-			upVoiceThread = new UpVoiceThread(serverAddress, voiceDatagramSocket);
-			upVoiceThread.start();
-			downVoiceThread = new DownVoiceThread(voiceDatagramSocket);
-			downVoiceThread.start();
+			try {
+				upVoiceThread = new UpVoiceThread(serverAddress, voiceDatagramSocket);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+			try {
+				downVoiceThread = new DownVoiceThread(voiceDatagramSocket);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+
 		} catch (Exception e) {
 			System.err.println(e);
 			// TODO: handle exception
@@ -211,7 +225,31 @@ public class ClientUI {
 		mainFrame.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				chatThread.disConnect(username);
+				try {
+					upVideoThread.disconnect();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				try {
+					downVideoThread.disconnect();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				try {
+					upVoiceThread.disconnect();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				try {
+					downVideoThread.disconnect();
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				try {
+					chatThread.disConnect(username);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
 			}
 		});
 

@@ -65,7 +65,7 @@ public class VoiceThread extends Thread {
 
 	public void sendToAllClients(byte[] packetData, String sentFromAddress, int sentFromPort) {
 		for (IpAddress client : clients) {
-			if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort) {
+//			if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort) {
 				DatagramPacket dp = new DatagramPacket(packetData, packetData.length, client.address, client.port);
 				try {
 					this.socket.send(dp);
@@ -73,7 +73,7 @@ public class VoiceThread extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
+//			}
 
 		}
 	}

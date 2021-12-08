@@ -1,11 +1,8 @@
 package server;
 
-import java.awt.print.Printable;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 
 import config.Config;
@@ -16,9 +13,6 @@ public class Server {
 	
 	public static final int BYTES_LENGTH = 62000;
 	
-	private ServerSocket chatServerSocket;
-	private DatagramSocket videoServerSocket;
-	private DatagramSocket voiceServerSocket;
 	byte[] outbuff = new byte[BYTES_LENGTH];
 	DatagramPacket videoPacket;
 	

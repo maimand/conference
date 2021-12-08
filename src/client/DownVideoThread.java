@@ -14,11 +14,16 @@ public class DownVideoThread extends Thread {
 
 	public DownVideoThread(DatagramSocket datagramSocket) throws Exception {
 		this.datagramSocket = datagramSocket;
+		this.start();
 	}
 
 	public static void removeUser(String address) {
 		userAddresses.remove(address);
 		ClientUI.setBlack(4 - userAddresses.size());
+	}
+	
+	void disconnect() {
+		datagramSocket.close();
 	}
 
 	@Override

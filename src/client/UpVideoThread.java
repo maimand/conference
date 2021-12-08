@@ -20,13 +20,18 @@ public class UpVideoThread extends Thread {
 	String serverAddressString;
 	BufferedImage bf;
 	DatagramSocket datagramSocket;
-	boolean isConnecting = true;
 
 	public UpVideoThread(String serverAddress, DatagramSocket datagramSocket) throws Exception {
 		this.serverAddressString = serverAddress;
 		this.datagramSocket = datagramSocket;
 		webcam = Webcam.getDefault();
 		webcam.open(true);
+		this.start();
+	}
+	
+	void disconnect() {
+		webcam.close();
+		this.datagramSocket.close();
 	}
 
 	@Override
