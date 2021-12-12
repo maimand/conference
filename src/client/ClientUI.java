@@ -164,6 +164,7 @@ public class ClientUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String sentence = messageBox.getText();
+				if(sentence.isEmpty()) return;
 				chatBox.append("" + username + ": " + sentence + "\n");
 				chatBox.setCaretPosition(chatBox.getDocument().getLength());
 				chatJPanel.revalidate();
@@ -263,6 +264,7 @@ public class ClientUI {
 
 	public static void setBlack(int number) {
 		if (number > 3) {
+			user1.setIcon(null);
 			user1.setForeground(Color.lightGray);
 			user1.setText("...");
 			user1.setFont(new Font("Serif", Font.BOLD, 30));
@@ -271,6 +273,7 @@ public class ClientUI {
 		}
 
 		if (number > 2) {
+			user2.setIcon(null);
 			user2.setForeground(Color.lightGray);
 			user2.setText("...");
 			user2.setFont(new Font("Serif", Font.BOLD, 30));
@@ -279,6 +282,7 @@ public class ClientUI {
 		}
 
 		if (number > 1) {
+			user3.setIcon(null);
 			user3.setForeground(Color.lightGray);
 			user3.setText("...");
 			user3.setFont(new Font("Serif", Font.BOLD, 30));
@@ -303,7 +307,7 @@ public class ClientUI {
 	}
 
 	public static void receive(String username, String message) {
-		chatBox.append("" + username + ":  " + message + "\n");
+		chatBox.append("" + username + ": " + message + "\n");
 		chatBox.setCaretPosition(chatBox.getDocument().getLength());
 		chatJPanel.revalidate();
 		chatJPanel.repaint();

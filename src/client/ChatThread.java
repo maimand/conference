@@ -52,14 +52,16 @@ class ChatThread extends Thread {
     public void run() {
         String username;
         String message;
+        String address;
+        
         try {
             while (true) {
             	username = inputStream.readUTF();
             	message = inputStream.readUTF();
+            	address = inputStream.readUTF();
             	ClientUI.receive(username, message);
             	if(message.equals("disconnect")) {
-            		String removedAddressString = inputStream.readUTF();
-            		DownVideoThread.removeUser(removedAddressString);
+            		DownVideoThread.removeUser(address);
             	}
             		
             }

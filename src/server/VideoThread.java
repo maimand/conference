@@ -37,7 +37,7 @@ class VideoThread extends Thread {
 			try {
 				byte[] outbuff = new byte[Server.BYTES_LENGTH];
 				DatagramPacket reP = new DatagramPacket(outbuff, outbuff.length);
-				this.socket.receive(reP);
+				socket.receive(reP);
 				addNewClient(reP);
 				sendToAllClients(reP.getData(), reP.getAddress().getHostAddress(), reP.getPort());
 				Thread.sleep(15);
@@ -67,7 +67,6 @@ class VideoThread extends Thread {
 
 	}
 
-	// todo: send to all other client the packetData
 	public void sendToAllClients(byte[] packetData, String sentFromAddress, int sentFromPort) {
 		for (IpAddress client : clients) {
 			DatagramPacket address;
@@ -75,11 +74,11 @@ class VideoThread extends Thread {
 			try {
 				address = new DatagramPacket(sentFromAddress.getBytes(), sentFromAddress.length(), client.address,
 						client.port);
-				this.socket.send(address);
+				socket.send(address);
 
 				message = new DatagramPacket(packetData, packetData.length, client.address, client.port);
-//				if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort)
-				this.socket.send(message);
+				if (!client.address.getHostAddress().equals(sentFromAddress) && client.port != sentFromPort)
+				socket.send(message);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
